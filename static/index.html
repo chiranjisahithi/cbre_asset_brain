@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBRE Asset Brain — Intelligent Memory System</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* CBRE Brand Palette */
+  --beige:    #f5f5dc;
+  --beige2:   #eeeed0;
+  --beige3:   #e8e8c0;
+  --green:    #003F2D;
+  --green2:   #005540;
+  --green3:   #006b50;
+  --bright:   #17E88F;
+  --bright-dim:rgba(23,232,143,0.12);
+  --bright-glow:rgba(23,232,143,0.3);
+  --black:    #1a1a1a;
+  --black2:   #2d2d2d;
+  --mid:      #4a4a4a;
+  --muted:    #7a7a6a;
+  --border:   rgba(0,63,45,0.12);
+  --border2:  rgba(0,63,45,0.22);
+  --white:    #ffffff;
+  --red:      #c0392b;
+  --red-dim:  rgba(192,57,43,0.1);
+  --amber:    #d97706;
+  --amber-dim:rgba(217,119,6,0.1);
+  --blue:     #1d6fa4;
+  --blue-dim: rgba(29,111,164,0.1);
+  --display:  'Syne', sans-serif;
+  --body:     'Inter', sans-serif;
+  --mono:     'DM Mono', monospace;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--beige);
+  color: var(--black);
+  font-family: var(--body);
+  font-size: 14px;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CURSOR ─────────────────────────────────────── */
+#cur  { position:fixed;width:9px;height:9px;background:var(--green);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 12px var(--bright-glow);transition:width .15s,height .15s }
+#curR { position:fixed;width:28px;height:28px;border:1.5px solid rgba(0,63,45,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%) }
+
+/* ── NAV ─────────────────────────────────────────── */
+nav {
+  position:fixed;top:0;left:0;right:0;height:60px;
+  background:var(--green);
+  border-bottom:1px solid var(--green2);
+  display:flex;align-items:center;padding:0 48px;z-index:500;
+  box-shadow:0 2px 20px rgba(0,0,0,.2);
+}
+.nav-logo { font-family:var(--display);font-size:17px;font-weight:800;color:var(--white);letter-spacing:.04em;display:flex;align-items:center;gap:10px }
+.nav-logo-mark { width:28px;height:28px;background:var(--bright);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+.nav-badge { font-family:var(--mono);font-size:9px;background:rgba(23,232,143,.15);color:var(--bright);border:1px solid rgba(23,232,143,.3);padding:2px 8px;border-radius:4px;letter-spacing:.08em }
+.nav-links { display:flex;margin-left:auto;gap:0 }
+.nav-a { font-size:12px;color:rgba(255,255,255,.7);padding:8px 18px;cursor:none;text-decoration:none;letter-spacing:.03em;transition:color .2s;border-left:1px solid rgba(255,255,255,.1) }
+.nav-a:hover { color:var(--bright) }
+
+/* ══════ HERO ══════════════════════════════════════ */
+#hero { height:100vh;position:relative;display:flex;align-items:center;overflow:hidden;background:#001a10 }
+#hero-bldg { animation: kenBurns 18s ease-in-out infinite alternate; transform-origin: center top; }
+@keyframes kenBurns {
+  0%   { transform: scale(1.08) translateX(0px); }
+  50%  { transform: scale(1.12) translateX(-20px); }
+  100% { transform: scale(1.06) translateX(10px); }
+}
+.hero-photo { position:absolute;inset:0;will-change:transform }
+.hero-photo img { width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(.4) saturate(.7) }
+.hero-overlay { position:absolute;inset:0;background:linear-gradient(110deg,rgba(0,63,45,.88) 0%,rgba(0,63,45,.65) 50%,rgba(0,20,15,.4) 100%) }
+.scan { position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(23,232,143,.7),transparent);z-index:2;animation:scanAnim 14s linear infinite;pointer-events:none }
+@keyframes scanAnim { 0%{top:0;opacity:.6}95%{opacity:.1}100%{top:100vh;opacity:0} }
+
+.data-tag { position:absolute;display:flex;align-items:center;gap:8px;background:rgba(0,20,15,.85);border:1px solid rgba(23,232,143,.3);padding:8px 12px;backdrop-filter:blur(12px);font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.9);animation:tagFloat ease-in-out infinite alternate;z-index:3;pointer-events:none }
+@keyframes tagFloat { 0%{transform:translateY(0)}100%{transform:translateY(-8px)} }
+.tag-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0 }
+
+.hero-content { position:relative;z-index:3;padding:0 80px;max-width:660px }
+.hero-overline { font-family:var(--mono);font-size:11px;letter-spacing:.25em;color:var(--bright);text-transform:uppercase;margin-bottom:18px;opacity:0;animation:fadeUp .7s ease .3s both }
+.hero-h1 { font-family:var(--display);font-size:clamp(44px,5.5vw,80px);font-weight:800;line-height:1.05;color:#fff;margin-bottom:20px;opacity:0;animation:fadeUp .7s ease .5s both }
+.hero-h1 em { font-style:normal;color:var(--bright) }
+.hero-p { font-size:15px;color:rgba(255,255,255,.75);line-height:1.8;max-width:460px;margin-bottom:32px;opacity:0;animation:fadeUp .7s ease .7s both }
+.hero-ctas { display:flex;gap:12px;opacity:0;animation:fadeUp .7s ease .9s both }
+.btn-primary { display:inline-flex;align-items:center;gap:8px;background:var(--bright);color:var(--green);font-family:var(--body);font-weight:700;font-size:13px;padding:12px 24px;border:none;border-radius:6px;cursor:none;transition:all .2s;text-decoration:none }
+.btn-primary:hover { background:#1ff79f;box-shadow:0 8px 24px var(--bright-glow) }
+.btn-outline { display:inline-flex;align-items:center;gap:8px;background:transparent;color:#fff;font-family:var(--body);font-weight:500;font-size:13px;padding:12px 24px;border:1.5px solid rgba(255,255,255,.4);border-radius:6px;cursor:none;transition:all .2s;text-decoration:none }
+.btn-outline:hover { border-color:var(--bright);color:var(--bright) }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
+.scroll-hint { position:absolute;bottom:32px;left:80px;display:flex;align-items:center;gap:10px;z-index:4;opacity:0;animation:fadeUp .6s ease 1.2s both;cursor:none;text-decoration:none }
+.sh-line { width:40px;height:1px;background:linear-gradient(90deg,var(--bright),transparent) }
+.sh-text { font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.4);text-transform:uppercase }
+
+/* ══════ PORTFOLIO ══════════════════════════════════ */
+#portfolio { padding:100px 60px 80px;max-width:1280px;margin:0 auto }
+.sec-eyebrow { font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--green3);text-transform:uppercase;margin-bottom:12px }
+.sec-h2 { font-family:var(--display);font-size:clamp(30px,4vw,52px);font-weight:800;color:var(--green);line-height:1.1;margin-bottom:12px }
+.sec-h2 em { font-style:normal;color:var(--green3) }
+.sec-sub { font-size:14px;color:var(--mid);line-height:1.8;max-width:520px;margin-bottom:52px }
+
+.prop-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:20px }
+.prop-card { background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:none;transition:all .3s;position:relative;box-shadow:0 2px 12px rgba(0,0,0,.06) }
+.prop-card:hover { border-color:var(--green);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,63,45,.12) }
+.prop-card.selected { border-color:var(--green);box-shadow:0 0 0 2px var(--green),0 12px 40px rgba(0,63,45,.15) }
+.prop-img { height:160px;overflow:hidden;position:relative }
+.prop-img img { width:100%;height:100%;object-fit:cover;filter:brightness(.85);transition:transform .5s }
+.prop-card:hover .prop-img img { transform:scale(1.04) }
+.prop-img-overlay { position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.5) 0%,transparent 60%) }
+.prop-status-badge { position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;padding:4px 10px;border-radius:4px;text-transform:uppercase }
+.psb-critical { background:var(--red-dim);color:var(--red);border:1px solid rgba(192,57,43,.3) }
+.psb-warning  { background:var(--amber-dim);color:var(--amber);border:1px solid rgba(217,119,6,.3) }
+.psb-healthy  { background:var(--bright-dim);color:var(--green);border:1px solid rgba(23,232,143,.3) }
+.prop-body { padding:20px }
+.prop-name { font-family:var(--display);font-size:18px;font-weight:700;color:var(--green);margin-bottom:3px }
+.prop-addr { font-size:11px;color:var(--muted);margin-bottom:16px }
+.prop-kpis { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px }
+.pkpi { background:var(--beige);border-radius:6px;padding:10px 12px;border:1px solid var(--border) }
+.pkpi-val { font-family:var(--display);font-size:20px;font-weight:700;line-height:1;color:var(--green) }
+.pkpi-val.c { color:var(--red) }
+.pkpi-val.w { color:var(--amber) }
+.pkpi-label { font-size:10px;color:var(--muted);margin-top:3px }
+.prop-hbar { height:3px;background:var(--beige2);border-radius:2px;overflow:hidden;margin-bottom:14px }
+.prop-hfill { height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.16,1,.3,1) }
+.prop-btn { width:100%;padding:10px;background:transparent;border:1.5px solid var(--border2);border-radius:6px;color:var(--green);font-family:var(--body);font-size:12px;font-weight:600;cursor:none;transition:all .2s }
+.prop-card.selected .prop-btn,.prop-btn:hover { background:var(--green);color:#fff;border-color:var(--green) }
+
+/* ══════ HOW IT WORKS ══════════════════════════════ */
+#how-it-works { background:var(--green);padding:80px 60px }
+#how-it-works .sec-eyebrow { color:var(--bright) }
+#how-it-works .sec-h2 { color:#fff }
+#how-it-works .sec-h2 em { color:var(--bright) }
+.hw-inner { max-width:1280px;margin:0 auto }
+.hw-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:52px }
+.hw-card { background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:32px;position:relative;overflow:hidden;transition:background .3s }
+.hw-card:hover { background:rgba(255,255,255,.11) }
+.hw-num { font-family:var(--display);font-size:72px;font-weight:800;position:absolute;right:20px;top:10px;opacity:.08;color:#fff;line-height:1 }
+.hw-icon-wrap { width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;background:rgba(23,232,143,.12);border:1px solid rgba(23,232,143,.2) }
+.hw-title { font-family:var(--display);font-size:20px;font-weight:700;color:#fff;margin-bottom:6px }
+.hw-tag { font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;color:var(--bright) }
+.hw-desc { font-size:13px;color:rgba(255,255,255,.7);line-height:1.8;margin-bottom:16px }
+.hw-eg { border-radius:8px;padding:12px 14px;font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.55);line-height:1.7;border-left:2px solid var(--bright);background:rgba(23,232,143,.05) }
+
+/* ══════ DASHBOARD ══════════════════════════════════ */
+#dashboard { padding:80px 40px 60px;max-width:1400px;margin:0 auto }
+
+.switcher-bar { background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px;box-shadow:0 1px 8px rgba(0,0,0,.06) }
+.sw-label { font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;flex-shrink:0 }
+.sw-search-wrap { position:relative;flex:1;max-width:280px }
+.sw-search { width:100%;background:var(--beige);border:1.5px solid var(--border2);border-radius:7px;color:var(--black);font-family:var(--body);font-size:12px;padding:8px 12px 8px 34px;outline:none;cursor:none;transition:border-color .2s }
+.sw-search:focus { border-color:var(--green) }
+.sw-search::placeholder { color:var(--muted) }
+.sw-search-icon { position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none }
+.sw-dropdown { display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--white);border:1.5px solid var(--border2);border-radius:8px;z-index:200;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12) }
+.sw-dd-item { padding:10px 14px;cursor:none;transition:background .15s;border-bottom:1px solid var(--border) }
+.sw-dd-item:last-child { border-bottom:none }
+.sw-dd-item:hover { background:var(--beige) }
+.sw-dd-name { font-size:12px;font-weight:600;color:var(--green) }
+.sw-dd-addr { font-size:10px;color:var(--muted);margin-top:2px }
+.sw-tabs { display:flex;gap:6px;flex-wrap:wrap }
+.sw-tab { font-family:var(--body);font-size:11px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--mid);cursor:none;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px;font-weight:500 }
+.sw-tab.active,.sw-tab:hover { border-color:var(--green);background:var(--green);color:#fff }
+.sw-tab-dot { width:5px;height:5px;border-radius:50%;flex-shrink:0 }
+.sw-actions { margin-left:auto;display:flex;gap:8px;flex-shrink:0 }
+
+.dash-bldg-header { margin-bottom:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap }
+.dbh-tag { font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--green3);text-transform:uppercase }
+.dbh-name { font-family:var(--display);font-size:28px;font-weight:800;color:var(--green) }
+.dbh-addr { font-size:12px;color:var(--muted);margin-left:auto;align-self:flex-end }
+
+/* AGENT ROW */
+.agent-row { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px }
+.agent-card { background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px;border-top:3px solid;box-shadow:0 1px 6px rgba(0,0,0,.05) }
+.ac-i { border-top-color:var(--green) }
+.ac-c { border-top-color:var(--bright) }
+.ac-t { border-top-color:var(--amber) }
+.ac-m { border-top-color:var(--red) }
+.ac-k { border-top-color:var(--blue) }
+.agent-label { font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:4px }
+.al-i { color:var(--green) }
+.al-c { color:var(--green3) }
+.al-t { color:var(--amber) }
+.al-m { color:var(--red) }
+.al-k { color:var(--blue) }
+.agent-name { font-size:11px;font-weight:700;color:var(--black);margin-bottom:3px }
+.agent-role { font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:8px }
+.agent-last { font-size:9px;color:var(--muted);line-height:1.4;font-family:var(--mono) }
+.agent-status { display:flex;align-items:center;gap:5px;margin-top:6px }
+.asts-dot { width:5px;height:5px;border-radius:50%;animation:asDot 1.8s ease-in-out infinite }
+@keyframes asDot { 0%,100%{opacity:1}50%{opacity:.2} }
+.asts-text { font-size:9px;font-family:var(--mono) }
+
+/* KPI ROW */
+.kpi-row { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px }
+.kc { background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.05) }
+.kc-val { font-family:var(--display);font-size:30px;font-weight:800;line-height:1;margin-bottom:4px;color:var(--green) }
+.kc-val.r { color:var(--red) }
+.kc-val.o { color:var(--amber) }
+.kc-val.i { color:var(--green) }
+.kc-val.v { color:var(--green3) }
+.kc-val.s { color:var(--blue) }
+.kc-label { font-size:11px;color:var(--black);font-weight:500 }
+.kc-hint { font-size:10px;color:var(--muted);margin-top:6px }
+
+/* MAIN GRID */
+.main-grid { display:grid;grid-template-columns:1fr 1fr 400px;gap:14px }
+.col { display:flex;flex-direction:column;gap:14px }
+
+/* WIDGET */
+.widget { background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 8px rgba(0,0,0,.06) }
+.wh { display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1.5px solid var(--border);background:var(--beige) }
+.wh-title { font-family:var(--display);font-size:13px;font-weight:700;color:var(--green) }
+.wh-pill { margin-left:auto;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:10px;background:var(--beige2);color:var(--muted);border:1px solid var(--border) }
+.live-ring { width:8px;height:8px;border-radius:50%;background:var(--bright);box-shadow:0 0 8px var(--bright-glow);animation:lring 1.8s ease-in-out infinite;flex-shrink:0 }
+@keyframes lring { 0%,100%{opacity:1}50%{opacity:.2} }
+.wb { flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--beige2) transparent }
+.wb::-webkit-scrollbar { width:3px }
+.wb::-webkit-scrollbar-thumb { background:var(--beige2);border-radius:2px }
+
+/* ALERTS */
+.al-item { display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border) }
+.al-item:last-child { border-bottom:none }
+.al-strip { width:2px;border-radius:1px;flex-shrink:0;align-self:stretch }
+.als-r { background:var(--red) }
+.als-o { background:var(--amber) }
+.als-i { background:var(--green) }
+.als-s { background:var(--blue) }
+.al-icon { width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+.ali-r { background:var(--red-dim) }
+.ali-o { background:var(--amber-dim) }
+.ali-i { background:var(--bright-dim) }
+.ali-s { background:var(--blue-dim) }
+.al-body { flex:1;min-width:0 }
+.al-title { font-size:12px;font-weight:500;color:var(--black);line-height:1.4;margin-bottom:2px }
+.al-sub { font-size:10px;color:var(--muted) }
+.al-time { font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:3px }
+
+/* PATTERNS */
+.pat-card { background:var(--beige);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid var(--green);transition:all .2s;animation:slideUp .4s ease both;border:1px solid var(--border);border-left:3px solid var(--green) }
+.pat-card:hover { background:var(--beige2) }
+@keyframes slideUp { from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)} }
+.pat-tag { font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--green3);font-weight:600;margin-bottom:7px }
+.pat-title { font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px;line-height:1.4 }
+.pat-body { font-size:12px;color:var(--mid);line-height:1.7 }
+.pat-conf { display:flex;align-items:center;gap:8px;margin-top:10px }
+.pat-bar { flex:1;height:3px;background:var(--beige2);border-radius:2px;overflow:hidden }
+.pat-fill { height:100%;background:linear-gradient(90deg,var(--green),var(--bright));border-radius:2px;transition:width 1s cubic-bezier(.16,1,.3,1) }
+.pat-pct { font-family:var(--mono);font-size:9px;color:var(--muted);min-width:28px;text-align:right }
+
+/* RULES */
+.rule-card { background:var(--beige);border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--amber);animation:slideUp .4s ease both;border:1px solid var(--border);border-left:3px solid var(--amber) }
+.rule-lbl { font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:5px }
+.rule-text { font-size:12px;font-weight:600;color:var(--black);margin-bottom:5px;line-height:1.4 }
+.rule-action { font-size:11px;color:var(--mid);line-height:1.5 }
+
+/* LOG FORM */
+.log-form { padding:14px;display:flex;flex-direction:column;gap:10px }
+.form-row { display:grid;grid-template-columns:1fr 1fr;gap:8px }
+.finput { background:var(--beige);border:1.5px solid var(--border2);border-radius:7px;color:var(--black);font-family:var(--body);font-size:12px;padding:8px 11px;outline:none;cursor:none;transition:border-color .2s;width:100% }
+.finput:focus { border-color:var(--green) }
+.finput::placeholder { color:var(--muted) }
+select.finput option { background:var(--white) }
+textarea.finput { resize:none;line-height:1.6 }
+.btn-log { padding:10px;background:var(--green);color:#fff;border:none;border-radius:7px;font-family:var(--body);font-size:12px;font-weight:700;cursor:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px }
+.btn-log:hover { background:var(--green2);box-shadow:0 4px 16px rgba(0,63,45,.3) }
+.log-ok { font-size:11px;color:var(--green);text-align:center;display:none;font-family:var(--mono);font-weight:500 }
+
+/* INSIGHT BAR */
+.insight-desc { padding:10px 14px;border-bottom:1.5px solid var(--border);font-size:11px;color:var(--mid);line-height:1.6;background:var(--beige) }
+
+/* CHAT */
+.chat-wrap { display:flex;flex-direction:column;height:660px }
+.chat-msgs { flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:var(--beige2) transparent }
+.chat-msgs::-webkit-scrollbar { width:3px }
+.chat-msgs::-webkit-scrollbar-thumb { background:var(--beige2) }
+
+.msg-u { align-self:flex-end;max-width:78%;background:var(--green);border-radius:12px 12px 2px 12px;padding:10px 14px;font-size:13px;color:#fff;line-height:1.6;animation:mR .3s ease both }
+@keyframes mR { from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)} }
+.msg-a { align-self:flex-start;max-width:94%;animation:mL .3s ease both }
+@keyframes mL { from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)} }
+.msg-ai { background:var(--beige);border:1.5px solid var(--border);border-radius:2px 12px 12px 12px;padding:14px;position:relative }
+.msg-ai::before { content:'BRAIN';position:absolute;top:-1px;left:12px;font-family:var(--mono);font-size:7px;letter-spacing:.14em;color:var(--green);background:var(--beige);padding:0 5px;transform:translateY(-50%);font-weight:600 }
+.msg-hdr { display:flex;align-items:center;gap:8px;margin-bottom:10px }
+.msg-av { width:26px;height:26px;background:var(--bright-dim);border:1.5px solid rgba(23,232,143,.3);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+.msg-nm { font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green) }
+.urg { margin-left:auto;font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.1em;border:1px solid;font-weight:600 }
+.urg-critical { color:var(--red);border-color:rgba(192,57,43,.35);background:var(--red-dim) }
+.urg-high     { color:var(--amber);border-color:rgba(217,119,6,.35);background:var(--amber-dim) }
+.urg-medium   { color:var(--blue);border-color:rgba(29,111,164,.35);background:var(--blue-dim) }
+.urg-low      { color:var(--muted);border-color:var(--border);background:transparent }
+.msg-ans { font-size:13px;color:var(--black);line-height:1.75;margin-bottom:9px }
+.msg-act { background:var(--bright-dim);border-left:2px solid var(--bright);border-radius:0 6px 6px 0;padding:7px 10px;font-size:12px;color:var(--green);font-weight:600;margin-bottom:7px }
+.msg-insight { background:rgba(0,63,45,.05);border-left:2px solid var(--green);border-radius:0 6px 6px 0;padding:7px 10px;font-size:12px;color:var(--green2);margin-bottom:7px;line-height:1.6 }
+.msg-il { font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--green3);margin-bottom:3px;font-weight:600 }
+.srcs { display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px }
+.src { font-family:var(--mono);font-size:9px;padding:2px 7px;background:var(--beige2);border:1px solid var(--border);border-radius:4px;color:var(--muted);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+.msg-mem { font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px }
+.thinking { display:flex;gap:5px;align-items:center }
+.td { width:5px;height:5px;background:var(--green);border-radius:50%;animation:tb 1s infinite }
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes tb { 0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1} }
+
+.quick-row { display:flex;flex-wrap:wrap;gap:5px;padding:10px 14px;border-top:1.5px solid var(--border);background:var(--beige) }
+.qb { font-family:var(--body);font-size:10px;padding:5px 11px;background:var(--white);border:1.5px solid var(--border2);border-radius:20px;color:var(--green);cursor:none;transition:all .2s;font-weight:500 }
+.qb:hover { border-color:var(--green);background:var(--green);color:#fff }
+
+.cin-row { display:flex;gap:7px;padding:10px 14px;border-top:1.5px solid var(--border);background:var(--beige) }
+.cin { flex:1;background:var(--white);border:1.5px solid var(--border2);border-radius:7px;color:var(--black);font-family:var(--body);font-size:13px;padding:9px 12px;outline:none;cursor:none;transition:border-color .2s }
+.cin:focus { border-color:var(--green) }
+.cin::placeholder { color:var(--muted) }
+.btn-ask { padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:7px;font-family:var(--body);font-size:12px;font-weight:700;cursor:none;transition:all .2s;white-space:nowrap }
+.btn-ask:hover { background:var(--green2);box-shadow:0 4px 16px rgba(0,63,45,.3) }
+.btn-ask:disabled { opacity:.4 }
+
+/* ACTION BUTTONS */
+.btn-analyze { padding:8px 16px;background:var(--bright-dim);color:var(--green);border:1.5px solid rgba(23,232,143,.35);border-radius:7px;font-family:var(--body);font-size:11px;font-weight:600;cursor:none;transition:all .2s;white-space:nowrap }
+.btn-analyze:hover { background:var(--bright);color:var(--green);border-color:var(--bright) }
+.btn-simulate { padding:8px 16px;background:var(--red-dim);color:var(--red);border:1.5px solid rgba(192,57,43,.3);border-radius:7px;font-family:var(--body);font-size:11px;font-weight:600;cursor:none;transition:all .2s;white-space:nowrap }
+.btn-simulate:hover { background:rgba(192,57,43,.15);border-color:var(--red) }
+
+.empty-s { text-align:center;padding:28px 14px;color:var(--muted);font-size:12px;line-height:2.2 }
+
+/* FOOTER */
+footer { background:var(--green);border-top:1px solid var(--green2);padding:40px 60px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px }
+.foot-logo { font-family:var(--display);font-size:16px;font-weight:800;color:#fff }
+.foot-sub { font-size:11px;color:rgba(255,255,255,.5);margin-top:4px }
+.foot-right { font-size:11px;color:rgba(255,255,255,.5);text-align:right;line-height:1.8;font-family:var(--mono) }
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="curR"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L2 6v8h4v-4h4v4h4V6L8 2z" fill="white" opacity=".9"/></svg>
+    </div>
+    CBRE Asset Brain
+  </div>
+  <span class="nav-badge">AI v1.0</span>
+  <div class="nav-links">
+    <a class="nav-a" href="#how-it-works">How It Works</a>
+    <a class="nav-a" href="#portfolio">Portfolio</a>
+    <a class="nav-a" href="#dashboard">Dashboard</a>
+  </div>
+</nav>
+
+<!-- ══════ HERO ══════════════════════════════════ -->
+<section id="hero">
+
+  <!-- HERO: dark left + real building photo right -->
+  <div style="position:absolute;inset:0;background:#001a10;z-index:0"></div>
+  <div class="scan" style="z-index:1"></div>
+
+  <!-- REAL BUILDING — right side, CSS architectural rendering -->
+  <div style="position:absolute;right:0;top:0;bottom:0;width:58%;z-index:1;overflow:hidden">
+
+    <!-- Architectural CSS building — looks like a real glass tower at night -->
+    <div id="hero-bldg" style="width:100%;height:100%;position:relative;background:linear-gradient(180deg,#0a1a28 0%,#0d2235 40%,#081520 100%)">
+
+      <!-- Sky background with city glow -->
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 120% 60% at 60% 0%,rgba(30,80,120,.4) 0%,transparent 60%),radial-gradient(ellipse 80% 40% at 80% 100%,rgba(0,63,45,.3) 0%,transparent 50%)"></div>
+
+      <!-- MAIN TOWER — tall glass skyscraper center -->
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:160px;height:82%">
+        <!-- Tower body -->
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,#1a3a5c 0%,#0e2238 60%,#081828 100%);border-left:1px solid rgba(100,180,255,.15);border-right:1px solid rgba(100,180,255,.1)"></div>
+        <!-- Glass reflection -->
+        <div style="position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(180deg,rgba(100,180,255,.12),rgba(100,180,255,.04))"></div>
+        <!-- Window grid -->
+        <div id="tower-windows" style="position:absolute;inset:6px 4px;display:grid;grid-template-columns:repeat(7,1fr);gap:2px"></div>
+        <!-- Setbacks -->
+        <div style="position:absolute;top:15%;left:-12px;right:-12px;height:3px;background:rgba(100,180,255,.2)"></div>
+        <div style="position:absolute;top:40%;left:-8px;right:-8px;height:2px;background:rgba(100,180,255,.15)"></div>
+        <div style="position:absolute;top:65%;left:-5px;right:-5px;height:2px;background:rgba(100,180,255,.12)"></div>
+        <!-- Spire -->
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:3px;height:44px;background:linear-gradient(180deg,rgba(23,232,143,.8),rgba(100,180,255,.4));box-shadow:0 0 12px rgba(23,232,143,.5)"></div>
+        <div style="position:absolute;top:-44px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#e8445a;box-shadow:0 0 10px #e8445a;animation:blink 2s ease-in-out infinite"></div>
+      </div>
+
+      <!-- LEFT BUILDING -->
+      <div style="position:absolute;bottom:0;left:8%;width:90px;height:52%">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,#152d45,#0a1e30);border-left:1px solid rgba(100,180,255,.1)"></div>
+        <div id="left-windows" style="position:absolute;inset:4px 3px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px"></div>
+      </div>
+
+      <!-- RIGHT BUILDING -->
+      <div style="position:absolute;bottom:0;right:6%;width:80px;height:44%">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,#1a3248,#0c1e2e)"></div>
+        <div id="right-windows" style="position:absolute;inset:4px 3px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px"></div>
+      </div>
+
+      <!-- GROUND GLOW -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(0deg,rgba(0,63,45,.4),transparent)"></div>
+
+      <!-- REFLECTION on ground -->
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:180px;height:30px;background:radial-gradient(ellipse,rgba(23,232,143,.15) 0%,transparent 70%)"></div>
+    </div>
+
+    <!-- Left fade blend -->
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,#001a10 0%,rgba(0,26,16,.5) 20%,transparent 50%);pointer-events:none"></div>
+  </div>
+
+  <!-- Live data tags — populated dynamically from /stats and /portfolio endpoints -->
+  <div class="data-tag" id="htag-1" style="right:12%;top:22%;animation-duration:3.5s;animation-delay:0s;z-index:10;pointer-events:none;display:none">
+    <div class="tag-dot" id="htag-1-dot"></div>
+    <span id="htag-1-text"></span>
+  </div>
+  <div class="data-tag" id="htag-2" style="right:6%;top:42%;animation-duration:4.5s;animation-delay:1s;z-index:10;pointer-events:none;display:none">
+    <div class="tag-dot" id="htag-2-dot"></div>
+    <span id="htag-2-text"></span>
+  </div>
+  <div class="data-tag" id="htag-3" style="right:18%;top:62%;animation-duration:5s;animation-delay:2s;z-index:10;pointer-events:none;display:none">
+    <div class="tag-dot" id="htag-3-dot"></div>
+    <span id="htag-3-text"></span>
+  </div>
+  <div class="data-tag" id="htag-4" style="right:8%;top:78%;animation-duration:4s;animation-delay:1.5s;z-index:10;pointer-events:none;display:none">
+    <div class="tag-dot" id="htag-4-dot"></div>
+    <span id="htag-4-text"></span>
+  </div>
+
+  <div class="hero-content" style="position:relative;z-index:10">
+    <div class="hero-overline">CBRE Intelligent Memory System</div>
+    <div class="hero-h1">Buildings That<br><em>Remember.</em></div>
+    <div class="hero-p">Five AI agents working together monitoring equipment, tracking tenants, logging maintenance, reading market signals and remembering everything across time.</div>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#dashboard">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="white" stroke-width="1.5"/><path d="M5 7h4M7 5l2 2-2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Open Dashboard
+      </a>
+      <a class="btn-outline" href="#how-it-works">How It Works</a>
+    </div>
+  </div>
+
+  <a class="scroll-hint" href="#portfolio" style="z-index:10">
+    <div class="sh-line"></div>
+    <div class="sh-text">Scroll to explore</div>
+  </a>
+</section>
+
+<!-- ══════ HOW IT WORKS ═════════════════════════ -->
+<section id="how-it-works">
+  <div class="hw-inner">
+    <div class="sec-eyebrow">How The Memory Works</div>
+    <div class="sec-h2">Three Layers of Intelligence.</div>
+    <div class="hw-grid">
+      <div class="hw-card">
+        <div class="hw-num">01</div>
+        <div class="hw-icon-wrap hi-i">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="2" rx="1" fill="#6366f1"/><rect x="3" y="9" width="10" height="2" rx="1" fill="#6366f1" opacity=".7"/><rect x="3" y="14" width="12" height="2" rx="1" fill="#6366f1" opacity=".4"/></svg>
+        </div>
+        <div class="hw-title">Event Memory</div>
+        <div class="hw-tag i">Every signal, stored</div>
+        <div class="hw-desc">Every sensor reading, tenant message, maintenance note and market signal is captured with an importance score. Critical signals persist; routine ones fade naturally over time.</div>
+        <div class="hw-eg i">"Chiller on Floor 12 showing temperature variance third occurrence this month. Importance elevated to 95%."</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-num">02</div>
+        <div class="hw-icon-wrap hi-v">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="5" r="2" fill="#8b5cf6"/><circle cx="15" cy="5" r="2" fill="#8b5cf6" opacity=".7"/><circle cx="10" cy="15" r="2" fill="#8b5cf6" opacity=".5"/><line x1="7" y1="5" x2="13" y2="5" stroke="#8b5cf6" stroke-width="1.5"/><line x1="6" y1="6.5" x2="9.5" y2="13" stroke="#8b5cf6" stroke-width="1.5" opacity=".6"/><line x1="14" y1="6.5" x2="10.5" y2="13" stroke="#8b5cf6" stroke-width="1.5" opacity=".6"/></svg>
+        </div>
+        <div class="hw-title">Pattern Intelligence</div>
+        <div class="hw-tag v">Connections humans miss</div>
+        <div class="hw-desc">The AI compresses events into cross-domain patterns connecting an equipment fault with a tenant complaint and an upcoming lease renewal in ways no single tool would ever surface.</div>
+        <div class="hw-eg v">"Floor 12 chiller risk is directly linked to Tenant 12B's complaints and their 90-day lease renewal. Action required urgently."</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-num">03</div>
+        <div class="hw-icon-wrap hi-c">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3L4 7v9h4v-4h4v4h4V7L10 3z" stroke="#f97316" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="hw-title">Learned Rules</div>
+        <div class="hw-tag c">Gets smarter over time</div>
+        <div class="hw-desc">When patterns repeat, the system writes operational rules automatically. The building learns from its own history  the same costly mistake never happens twice.</div>
+        <div class="hw-eg c">"RULE: 3+ maintenance events on same floor within 30 days → Schedule preventive inspection before a tenant complaint is filed."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ PORTFOLIO ═════════════════════════════ -->
+<section id="portfolio" style="background:transparent">
+  <div class="sec-eyebrow">Your Portfolio</div>
+  <div class="sec-h2">All Properties.<br><em>One Brain.</em></div>
+  <div class="sec-sub">Every property you manage gets its own persistent AI memory episodic events, learned patterns, operational rules. Select a property to load its live dashboard.</div>
+  <div class="prop-grid" id="portfolio-grid">
+    <div class="prop-card" style="opacity:.3;pointer-events:none"><div class="empty-s">Loading...</div></div>
+    <div class="prop-card" style="opacity:.3;pointer-events:none"><div class="empty-s">Loading...</div></div>
+    <div class="prop-card" style="opacity:.3;pointer-events:none"><div class="empty-s">Loading...</div></div>
+  </div>
+</section>
+
+<!-- ══════ DASHBOARD ════════════════════════════ -->
+<section id="dashboard">
+
+  <!-- BUILDING SWITCHER -->
+  <div class="switcher-bar">
+    <div class="sw-label">Building</div>
+    <div class="sw-search-wrap">
+      <div class="sw-search-icon">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#4a4870" stroke-width="1.5"/><line x1="8.5" y1="8.5" x2="12" y2="12" stroke="#4a4870" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <input class="sw-search" id="bldg-search" placeholder="Search buildings..." onkeyup="filterBuildings(this.value)">
+      <div class="sw-dropdown" id="bldg-dropdown"></div>
+    </div>
+    <div class="sw-tabs" id="bldg-tabs"></div>
+    <div class="sw-actions">
+      <button class="btn-analyze" id="compress-btn" onclick="compressMemory(this)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px"><circle cx="6" cy="6" r="5" stroke="#8b5cf6" stroke-width="1.3"/><path d="M4 6h4M6 4l2 2-2 2" stroke="#8b5cf6" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Analyze Patterns
+      </button>
+      <button class="btn-simulate" id="anomaly-btn" onclick="triggerAnomaly(this)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M6 1L7.5 4.5H11L8.5 6.5L9.5 10L6 8L2.5 10L3.5 6.5L1 4.5H4.5L6 1Z" stroke="#f43f5e" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Simulate Event
+      </button>
+    </div>
+  </div>
+
+  <!-- BUILDING HEADER -->
+  <div class="dash-bldg-header">
+    <div>
+      <div class="dbh-tag">Live Dashboard</div>
+      <div class="dbh-name" id="active-name">Dallas Tower A</div>
+    </div>
+    <div class="dbh-addr" id="active-addr">500 Commerce St, Dallas TX</div>
+  </div>
+
+  <!-- AGENT ROW -->
+  <div class="agent-row">
+    <div class="agent-card ac-i">
+      <div class="agent-label al-i">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="5" cy="5" r="4" stroke="#6366f1" stroke-width="1.2"/><path d="M3 5h4M5 3l2 2-2 2" stroke="#6366f1" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Orchestrator
+      </div>
+      <div class="agent-name">Brain Agent</div>
+      <div class="agent-role">Cross-references all 4 agents · answers questions · explains decisions</div>
+      <div class="agent-status"><div class="asts-dot" style="background:var(--indigo);box-shadow:0 0 6px var(--indigo)"></div><div class="asts-text" style="color:var(--indigo)">Active</div></div>
+    </div>
+    <div class="agent-card ac-c">
+      <div class="agent-label al-c">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><rect x="1" y="3" width="8" height="5" rx="1" stroke="#10b981" stroke-width="1.2"/><path d="M3 3V2a2 2 0 014 0v1" stroke="#10b981" stroke-width="1.2"/></svg>
+        Ops Agent
+      </div>
+      <div class="agent-name">Equipment & Sensors</div>
+      <div class="agent-role">HVAC, elevators, sensors · detects anomalies · flags floor patterns</div>
+      <div class="agent-last" id="ops-last">Last signal: —</div>
+    </div>
+    <div class="agent-card ac-t">
+      <div class="agent-label al-t">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="5" cy="3.5" r="2" stroke="#f97316" stroke-width="1.2"/><path d="M1.5 9c0-2 1.6-3 3.5-3s3.5 1 3.5 3" stroke="#f97316" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Tenant Agent
+      </div>
+      <div class="agent-name">Complaints & Requests</div>
+      <div class="agent-role">Scores severity · flags lease risk · tracks tenant history</div>
+      <div class="agent-last" id="tenant-last">Last signal: —</div>
+    </div>
+    <div class="agent-card ac-m">
+      <div class="agent-label al-m">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><path d="M2 8l2-3 2 2 2-4" stroke="#f43f5e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Maintenance Agent
+      </div>
+      <div class="agent-name">Work Orders & History</div>
+      <div class="agent-role">Logs work orders · detects recurring issues · writes rules</div>
+      <div class="agent-last" id="maint-last">Last signal: —</div>
+    </div>
+    <div class="agent-card ac-k">
+      <div class="agent-label al-k">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><rect x="1" y="4" width="2" height="5" fill="#38bdf8" opacity=".5"/><rect x="4" y="2" width="2" height="7" fill="#38bdf8" opacity=".7"/><rect x="7" y="1" width="2" height="8" fill="#38bdf8"/></svg>
+        Market Agent
+      </div>
+      <div class="agent-name">Leases & Market Data</div>
+      <div class="agent-role">Tracks lease expiries · competitor signals · market rates</div>
+      <div class="agent-last" id="market-last">Last signal: —</div>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kc"><div class="kc-val r" id="s-crit">—</div><div class="kc-label">Critical Alerts</div><div class="kc-hint">Immediate action needed</div></div>
+    <div class="kc"><div class="kc-val o" id="s-high">—</div><div class="kc-label">High Priority</div><div class="kc-hint">Review today</div></div>
+    <div class="kc"><div class="kc-val i" id="s-ep">—</div><div class="kc-label">Events in Memory</div><div class="kc-hint">Last 30 days</div></div>
+    <div class="kc"><div class="kc-val v" id="s-sem">—</div><div class="kc-label">Patterns Found</div><div class="kc-hint">By AI analysis</div></div>
+    <div class="kc"><div class="kc-val s" id="s-proc">—</div><div class="kc-label">Rules Learned</div><div class="kc-hint">From history</div></div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: Alerts + Log + Rules -->
+    <div class="col">
+      <div class="widget" style="flex:2">
+        <div class="wh"><div class="live-ring"></div><div class="wh-title">Active Alerts</div><div class="wh-pill" id="feed-count">0</div></div>
+        <div class="wb" id="event-feed"><div class="empty-s">No alerts yet.</div></div>
+        <button class="see-more-btn" id="seebtn-event-feed" style="display:none" onclick="togglePanel('event-feed',this)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>See more</button>
+      </div>
+
+      <div class="widget">
+        <div class="wh">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2L2 5.5v7h3.5V9h3v3.5H12v-7L7 2z" stroke="#f97316" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <div class="wh-title">Log a Signal</div>
+          <div class="wh-pill">No sensor needed</div>
+        </div>
+        <div class="log-form">
+          <div class="form-row">
+            <select class="finput" id="log-type">
+              <option value="complaint">Tenant Complaint</option>
+              <option value="observation">Manager Observation</option>
+              <option value="maintenance">Maintenance Note</option>
+              <option value="market">Market Signal</option>
+            </select>
+            <input class="finput" id="log-floor" placeholder="Floor (optional)">
+          </div>
+          <input class="finput" id="log-reporter" placeholder="Reported by (name or tenant ID)">
+          <textarea class="finput" id="log-content" rows="3" placeholder="Describe the issue in plain English..."></textarea>
+          <button class="btn-log" onclick="submitLog(this)">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7.5 3L11 6.5 7.5 10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Log to Memory
+          </button>
+          <div class="log-ok" id="log-ok">Signal stored pattern analysis running</div>
+        </div>
+      </div>
+
+      <div class="widget" style="flex:1">
+        <div class="wh">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11l2.5-4 2.5 2.5 2.5-5L12 8" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="wh-title">Rules Learned</div><div class="wh-pill" id="proc-count">0</div>
+        </div>
+        <div class="wb" id="procedural-panel"><div class="empty-s">No rules yet.</div></div>
+        <button class="see-more-btn" id="seebtn-procedural-panel" style="display:none" onclick="togglePanel('procedural-panel',this)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>See more</button>
+      </div>
+    </div>
+
+    <!-- MIDDLE: Pattern Analysis -->
+    <div class="col">
+      <div class="widget" style="flex:1">
+        <div class="wh">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="4" cy="4" r="2" stroke="#8b5cf6" stroke-width="1.3"/><circle cx="10" cy="4" r="2" stroke="#8b5cf6" stroke-width="1.3" opacity=".7"/><circle cx="7" cy="11" r="2" stroke="#8b5cf6" stroke-width="1.3" opacity=".5"/><line x1="6" y1="4" x2="8" y2="4" stroke="#8b5cf6" stroke-width="1.3"/><line x1="5" y1="5.5" x2="6.5" y2="9" stroke="#8b5cf6" stroke-width="1.3" opacity=".6"/><line x1="9" y1="5.5" x2="7.5" y2="9" stroke="#8b5cf6" stroke-width="1.3" opacity=".6"/></svg>
+          <div class="wh-title">AI Pattern Analysis</div>
+          <div class="wh-pill" id="sem-count">0</div>
+        </div>
+        <div style="padding:8px 14px;border-bottom:1px solid var(--border)">
+          <button class="btn-analyze" id="compress-btn2" onclick="compressMemory(this)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#8b5cf6" stroke-width="1.3"/><path d="M3.5 6h5M6 3.5l2.5 2.5L6 8.5" stroke="#8b5cf6" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Run Pattern Analysis Now
+          </button>
+        </div>
+        <div class="wb" id="semantic-panel"><div class="empty-s">No patterns yet.<br>Add signals then run analysis.</div></div>
+        <button class="see-more-btn" id="seebtn-semantic-panel" style="display:none" onclick="togglePanel('semantic-panel',this)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>See more</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Brain Chat -->
+    <div class="col">
+      <div class="widget chat-wrap">
+        <div class="wh">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2" width="11" height="8" rx="2" stroke="#6366f1" stroke-width="1.3"/><path d="M4 12l3-2 3 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="wh-title">Ask the Building Brain</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mint);background:var(--mint-dim);padding:2px 7px;border-radius:8px;border:1px solid rgba(16,185,129,.2);margin-left:6px">LIVE</div>
+        </div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg-a">
+            <div class="msg-ai">
+              <div class="msg-hdr">
+                <div class="msg-av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 7h4M7 5l2 2-2 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+                <div class="msg-nm">Asset Brain</div>
+              </div>
+              <div class="msg-ans">Hello. I have full memory of <strong id="chat-bldg">Dallas Tower A</strong> every event from all 4 agents, every pattern learned, every rule written.<br><br>Ask me what's wrong, why it happened, and what to do about it.</div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-row">
+          <button class="qb" onclick="ask('What is the biggest risk right now and what should I do?')">Biggest risk?</button>
+          <button class="qb" onclick="ask('Why is Tenant 12B unhappy — full history and recommended action')">Tenant 12B issue</button>
+          <button class="qb" onclick="ask('Top 3 priorities this week with specific steps')">Top priorities</button>
+          <button class="qb" onclick="ask('Which tenants might not renew and how do I retain them?')">Retention risk</button>
+          <button class="qb" onclick="ask('Write a 3-sentence building health update for the property owner')">Owner update</button>
+          <button class="qb" onclick="ask('What has this building memory learned that I should act on?')">What did it learn?</button>
+        </div>
+        <div class="cin-row">
+          <input class="cin" id="cin" placeholder="Ask anything about this building..." onkeydown="if(event.key==='Enter')sendQ()">
+          <button class="btn-ask" id="ask-btn" onclick="sendQ()">Ask</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="foot-logo">CBRE Asset Brain</div>
+    <div class="foot-sub">Intelligent Memory System · WeHack 2026</div>
+  </div>
+  <div class="foot-right">
+    5 agents · 3 memory tiers · sensor-agnostic<br>
+    Built with Claude AI · Multi-agent architecture
+  </div>
+</footer>
+
+<script>
+// ── PANEL TOGGLE ─────────────────────────────────
+function togglePanel(id, btn) {
+  const wb = document.getElementById(id);
+  if (!wb) return;
+  const hidden = wb.querySelectorAll('.panel-hidden');
+  const isExpanded = btn.dataset.expanded === '1';
+  if (isExpanded) {
+    // collapse — hide extras
+    hidden.forEach(el => el.style.display = 'none');
+    btn.dataset.expanded = '0';
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>See more';
+  } else {
+    // expand — show all
+    hidden.forEach(el => el.style.display = '');
+    btn.dataset.expanded = '1';
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 7.5L6 4.5L9 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>See less';
+  }
+}
+
+// ── CURSOR ──────────────────────────────────────
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a)})();
+document.querySelectorAll('button,input,a,select,textarea').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='14px';cur.style.height='14px';curR.style.width='40px';curR.style.height='40px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='8px';cur.style.height='8px';curR.style.width='28px';curR.style.height='28px'});
+});
+
+// ── HERO LIVE DATA TAGS — pulled from backend ───
+function setTag(n, color, text) {
+  const tag  = document.getElementById('htag-' + n);
+  const dot  = document.getElementById('htag-' + n + '-dot');
+  const span = document.getElementById('htag-' + n + '-text');
+  if (!tag) return;
+  dot.style.cssText  = `background:${color};box-shadow:0 0 8px ${color}`;
+  span.textContent   = text;
+  tag.style.display  = 'flex';
+}
+
+async function loadHeroTags() {
+  try {
+    const [stats, portfolio] = await Promise.all([
+      fetch(`/stats/${activeBuilding}`).then(r => r.json()),
+      fetch('/portfolio').then(r => r.json())
+    ]);
+
+    // Tag 1: Critical alerts or healthy
+    if (stats.critical_events > 0) {
+      setTag(1, '#c0392b', `${stats.critical_events} Critical Alert${stats.critical_events > 1 ? 's' : ''} — Action Needed`);
+    } else {
+      setTag(1, '#17E88F', 'All Systems Healthy');
+    }
+
+    // Tag 2: Most urgent episodic event — pull latest critical
+    const eps = await fetch(`/memory/episodic?limit=5&min_salience=0.85&building_id=${activeBuilding}`).then(r => r.json());
+    if (eps.length > 0) {
+      const top = eps[0];
+      const agent = top.agent.replace('_agent', '');
+      const floor = top.floor ? ` · Floor ${top.floor}` : '';
+      const preview = top.content.slice(0, 38) + (top.content.length > 38 ? '…' : '');
+      const col = top.salience >= 0.9 ? '#c0392b' : '#d97706';
+      setTag(2, col, preview + floor);
+    } else {
+      setTag(2, '#d97706', 'No high-priority alerts');
+    }
+
+    // Tag 3: Memory count — real number
+    setTag(3, '#17E88F', `Memory Active — ${stats.episodic_count} events stored`);
+
+    // Tag 4: Patterns or rules
+    if (stats.semantic_count > 0) {
+      setTag(4, '#6366f1', `${stats.semantic_count} Pattern${stats.semantic_count > 1 ? 's' : ''} Detected by AI`);
+    } else if (stats.procedural_count > 0) {
+      setTag(4, '#d97706', `${stats.procedural_count} Rule${stats.procedural_count > 1 ? 's' : ''} Learned`);
+    } else {
+      setTag(4, '#6366f1', 'Run Analysis to Find Patterns');
+    }
+
+  } catch(e) {
+    // Fallback if server not running yet — show generic tags
+    setTag(1, '#c0392b', 'Intelligent Alert System');
+    setTag(2, '#d97706', 'Lease & Maintenance Tracking');
+    setTag(3, '#17E88F', 'Multi-Agent Memory Active');
+    setTag(4, '#6366f1', 'AI Pattern Detection');
+  }
+}
+
+// ── HERO BUILDING WINDOWS ───────────────────────
+function makeHeroWindows(id, cols, rows, alertFloor) {
+  const g = document.getElementById(id);
+  if (!g) return;
+  g.innerHTML = '';
+  g.style.gridTemplateRows = `repeat(${rows},1fr)`;
+  for (let i = 0; i < cols * rows; i++) {
+    const w = document.createElement('div');
+    const floor = Math.floor(i / cols);
+    const r = Math.random();
+    const isAlert = floor === alertFloor;
+    let bg;
+    if (isAlert)          bg = 'rgba(232,68,90,.9)';
+    else if (r < 0.55)    bg = `rgba(${180+Math.floor(r*60)},${210+Math.floor(r*30)},255,${0.5+r*0.3})`;
+    else if (r < 0.7)     bg = `rgba(255,220,120,${0.4+r*0.2})`;
+    else                  bg = 'rgba(255,255,255,0.04)';
+    w.style.cssText = `border-radius:1px;background:${bg};transition:background .8s`;
+    g.appendChild(w);
+  }
+  // Flicker
+  setInterval(() => {
+    const wins = g.querySelectorAll('div');
+    const w = wins[Math.floor(Math.random() * wins.length)];
+    const curr = w.style.background;
+    if (curr.includes('0.04')) {
+      w.style.background = `rgba(${180+Math.floor(Math.random()*60)},210,255,${0.4+Math.random()*0.3})`;
+    } else if (Math.random() > 0.7) {
+      w.style.background = 'rgba(255,255,255,0.04)';
+    }
+  }, 500);
+}
+makeHeroWindows('tower-windows', 7, 28, 8);
+makeHeroWindows('left-windows',  5, 18, 5);
+makeHeroWindows('right-windows', 4, 16, 3);
+
+// Hero parallax on scroll
+window.addEventListener('scroll', () => {
+  const img = document.getElementById('hero-bldg');
+  if (!img) return;
+  const s = window.scrollY;
+  img.style.marginTop = (s * 0.25) + 'px';
+});
+
+// ── PORTFOLIO ────────────────────────────────────
+let activeBuilding='dallas_tower_a';
+let knownIds=new Set();
+let allBuildings=[];
+
+function statusBadge(s,crit,high){
+  if(s==='critical') return `<div class="prop-status-badge psb-critical">${crit} Critical</div>`;
+  if(s==='warning')  return `<div class="prop-status-badge psb-warning">${high} Warning</div>`;
+  return `<div class="prop-status-badge psb-healthy">All Clear</div>`;
+}
+function hGrad(s){
+  if(s==='critical') return 'linear-gradient(90deg,#f43f5e,#f97316)';
+  if(s==='warning')  return 'linear-gradient(90deg,#f97316,#10b981)';
+  return 'linear-gradient(90deg,#10b981,#38bdf8)';
+}
+function critClass(n){ return n>0?'c':'g'; }
+function timeAgo(ts){
+  if(!ts) return 'No data';
+  const d=Math.floor((Date.now()-new Date(ts).getTime())/60000);
+  if(d<1) return 'Just now';
+  if(d<60) return `${d}m ago`;
+  return `${Math.floor(d/60)}h ago`;
+}
+
+// Building images — real Unsplash photos per property
+const BLDG_IMGS={
+  dallas_tower_a:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=70&auto=format',
+  austin_plaza_b:'https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?w=600&q=70&auto=format',
+  houston_center_c:'https://images.unsplash.com/photo-1554995207-c18c203602cb?w=600&q=70&auto=format',
+};
+
+async function loadPortfolio(){
+  try{
+    allBuildings=await(await fetch('/portfolio')).json();
+    const grid=document.getElementById('portfolio-grid');
+    if(!grid) return;
+    grid.innerHTML='';
+    allBuildings.forEach((b,i)=>{
+      const sel=b.id===activeBuilding;
+      const img=BLDG_IMGS[b.id]||BLDG_IMGS.dallas_tower_a;
+      const card=document.createElement('div');
+      card.className='prop-card'+(sel?' selected':'');
+      card.id='prop-card-'+b.id;
+      card.onclick=()=>selectBuilding(b.id,b.name,b.address,card);
+      card.innerHTML=`
+        <div class="prop-img">
+          <img src="${img}" alt="${b.name}" loading="lazy">
+          <div class="prop-img-overlay"></div>
+          ${statusBadge(b.status,b.critical_events,b.high_events)}
+        </div>
+        <div class="prop-body">
+          <div class="prop-name">${b.name}</div>
+          <div class="prop-addr">${b.address} · ${b.floors} floors · ${b.sqft} sq ft</div>
+          <div class="prop-kpis">
+            <div class="pkpi"><div class="pkpi-val ${critClass(b.critical_events)}">${b.critical_events}</div><div class="pkpi-label">Critical Alerts</div></div>
+            <div class="pkpi"><div class="pkpi-val n">${b.episodic_count}</div><div class="pkpi-label">Memory Events</div></div>
+            <div class="pkpi"><div class="pkpi-val" style="color:var(--violet)">${b.semantic_count}</div><div class="pkpi-label">Patterns Found</div></div>
+            <div class="pkpi"><div class="pkpi-val" style="color:var(--sky)">${b.procedural_count}</div><div class="pkpi-label">Rules Learned</div></div>
+          </div>
+          <div class="prop-hbar"><div class="prop-hfill" style="width:${b.health_score}%;background:${hGrad(b.status)}"></div></div>
+          <button class="prop-btn">View Live Dashboard</button>
+        </div>`;
+      grid.appendChild(card);
+      setTimeout(()=>{card.style.opacity='1';card.style.transform='translateY(0)'},80*i);
+    });
+    renderTabs();
+  }catch(e){console.error(e);}
+}
+
+function renderTabs(){
+  const tabs=document.getElementById('bldg-tabs');
+  if(!tabs) return;
+  tabs.innerHTML='';
+  allBuildings.forEach(b=>{
+    const dotColor=b.status==='critical'?'#f43f5e':b.status==='warning'?'#f97316':'#10b981';
+    const btn=document.createElement('button');
+    btn.className='sw-tab'+(b.id===activeBuilding?' active':'');
+    btn.innerHTML=`<span class="sw-tab-dot" style="background:${dotColor}"></span>${b.name.split(' ').slice(0,2).join(' ')}`;
+    btn.onclick=()=>selectBuilding(b.id,b.name,b.address,null);
+    tabs.appendChild(btn);
+  });
+}
+
+function filterBuildings(val){
+  const dd=document.getElementById('bldg-dropdown');
+  if(!val.trim()){dd.style.display='none';return;}
+  const m=allBuildings.filter(b=>b.name.toLowerCase().includes(val.toLowerCase())||b.address.toLowerCase().includes(val.toLowerCase()));
+  if(!m.length){dd.style.display='none';return;}
+  dd.style.display='block';
+  dd.innerHTML=m.map(b=>`
+    <div class="sw-dd-item" onclick="selectBuilding('${b.id}','${b.name}','${b.address}',null);document.getElementById('bldg-search').value='';document.getElementById('bldg-dropdown').style.display='none'">
+      <div class="sw-dd-name">${b.name}</div>
+      <div class="sw-dd-addr">${b.address}</div>
+    </div>`).join('');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#bldg-search')&&!e.target.closest('#bldg-dropdown')){
+    const dd=document.getElementById('bldg-dropdown');
+    if(dd) dd.style.display='none';
+  }
+});
+
+function selectBuilding(id,name,addr,card){
+  activeBuilding=id;
+  knownIds=new Set();
+  document.querySelectorAll('.prop-card').forEach(c=>c.classList.remove('selected'));
+  const pc=document.getElementById('prop-card-'+id);
+  if(pc) pc.classList.add('selected');
+  if(card) card.classList.add('selected');
+  document.getElementById('active-name').textContent=name;
+  document.getElementById('active-addr').textContent=addr;
+  document.getElementById('chat-bldg').textContent=name;
+  ['event-feed','semantic-panel','procedural-panel'].forEach(pid=>{
+    document.getElementById(pid).innerHTML='<div class="empty-s">Loading memory...</div>';
+  });
+  renderTabs();
+  refresh();
+  document.getElementById('dashboard').scrollIntoView({behavior:'smooth'});
+}
+
+// ── DATA LOADING ─────────────────────────────────
+async function loadEpisodic(){
+  try{
+    const evs=await(await fetch('/memory/episodic?limit=40')).json();
+    const feed=document.getElementById('event-feed');
+    const newE=evs.filter(e=>!knownIds.has(e.id));
+    if(!newE.length) return;
+    if(!knownIds.size) feed.innerHTML='';
+    newE.forEach((e,i)=>{
+      knownIds.add(e.id);
+      const el=buildAlert(e);
+      // hide items beyond first 5
+      const total=feed.querySelectorAll('.al-item').length;
+      if(total>=5) el.classList.add('panel-hidden');
+      feed.prepend(el);
+    });
+    document.getElementById('feed-count').textContent=evs.length;
+    // show see-more only if >5 events
+    const seeBtn=document.getElementById('seebtn-event-feed');
+    if(seeBtn) seeBtn.style.display=evs.length>5?'flex':'none';
+    // Agent last-signal
+    const am={ops_agent:'ops',tenant_agent:'tenant',maintenance_agent:'maint',market_agent:'market'};
+    const last={};
+    evs.forEach(e=>{const k=am[e.agent]||e.agent;if(!last[k])last[k]=e;});
+    const lm={ops:'ops-last',tenant:'tenant-last',maint:'maint-last',market:'market-last'};
+    Object.entries(last).forEach(([ag,e])=>{
+      const el=document.getElementById(lm[ag]);
+      if(el){
+        const preview=e.content.slice(0,44)+(e.content.length>44?'…':'');
+        el.textContent=e.timestamp.slice(0,10)+': '+preview;
+        el.style.color=e.salience>=.9?'#f43f5e':e.salience>=.7?'#f97316':'var(--text3)';
+      }
+    });
+  }catch(e){}
+}
+
+function buildAlert(e){
+  const ag=e.agent.replace('_agent','');
+  const colMap={ops:'i',tenant:'o',maintenance:'r',market:'s'};
+  const iconMap={
+    ops:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="7" rx="1.5" stroke="#10b981" stroke-width="1.2"/><path d="M5 5V3.5a2 2 0 014 0V5" stroke="#10b981" stroke-width="1.2"/></svg>',
+    tenant:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="#f97316" stroke-width="1.2"/><path d="M2.5 12c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#f97316" stroke-width="1.2" stroke-linecap="round"/></svg>',
+    maintenance:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 2.5L11.5 5.5 5.5 11.5l-3 .5.5-3L8.5 2.5z" stroke="#f43f5e" stroke-width="1.2" stroke-linejoin="round"/></svg>',
+    market:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10l3-4 3 3 3-6" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+  const stripC=e.salience>=.9?'als-r':e.salience>=.7?'als-o':'als-i';
+  const boxC=e.salience>=.9?'ali-r':e.salience>=.7?'ali-o':'ali-i';
+  const date=e.timestamp.slice(0,10);
+  const fl=e.floor?` · Floor ${e.floor}`:'';
+  const text=e.content.replace(/\+(\d+\.?\d*)°C/g,'temp +$1°C').replace(/salience/gi,'priority');
+  const d=document.createElement('div');
+  d.className='al-item';
+  d.innerHTML=`<div class="al-strip ${stripC}"></div><div class="al-icon ${boxC}">${iconMap[ag]||iconMap.ops}</div><div class="al-body"><div class="al-title">${text}</div><div class="al-sub">${ag.charAt(0).toUpperCase()+ag.slice(1)} Agent${fl}</div><div class="al-time">${date}</div></div>`;
+  return d;
+}
+
+async function loadSemantic(){
+  try{
+    const ps=await(await fetch('/memory/semantic')).json();
+    const panel=document.getElementById('semantic-panel');
+    document.getElementById('sem-count').textContent=ps.length;
+    if(!ps.length){panel.innerHTML='<div class="empty-s">No patterns yet.<br>Add signals then run analysis.</div>';
+      const sb=document.getElementById('seebtn-semantic-panel');if(sb)sb.style.display='none';return;}
+    const semBtn=document.getElementById('seebtn-semantic-panel');
+    if(semBtn) semBtn.style.display=ps.length>2?'flex':'none';
+    panel.innerHTML=ps.map((p,i)=>`
+      <div class="pat-card ${i>=2?'panel-hidden':''}" style="animation-delay:${i*.06}s">
+        <div class="pat-tag">AI Pattern ${i+1}</div>
+        <div class="pat-title">${p.topic.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</div>
+        <div class="pat-body">${p.summary}</div>
+        <div class="pat-conf"><div class="pat-bar"><div class="pat-fill" style="width:${p.confidence*100}%"></div></div><div class="pat-pct">${Math.round(p.confidence*100)}%</div></div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function loadProcedural(){
+  try{
+    const rs=await(await fetch('/memory/procedural')).json();
+    const panel=document.getElementById('procedural-panel');
+    document.getElementById('proc-count').textContent=rs.length;
+    if(!rs.length){panel.innerHTML='<div class="empty-s">No rules yet.<br>Rules appear automatically when patterns repeat.</div>';
+      const pb=document.getElementById('seebtn-procedural-panel');if(pb)pb.style.display='none';return;}
+    const procBtn=document.getElementById('seebtn-procedural-panel');
+    if(procBtn) procBtn.style.display=rs.length>2?'flex':'none';
+    panel.innerHTML=rs.map((r,i)=>`
+      <div class="rule-card ${i>=2?'panel-hidden':''}" style="animation-delay:${i*.06}s">
+        <div class="rule-lbl">Learned Rule</div>
+        <div class="rule-text">${r.rule}</div>
+        <div class="rule-action">Action: ${r.action}</div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function loadStats(){
+  try{
+    const s=await(await fetch(`/stats/${activeBuilding}`)).json();
+    document.getElementById('s-ep').textContent=s.episodic_count;
+    document.getElementById('s-sem').textContent=s.semantic_count;
+    document.getElementById('s-proc').textContent=s.procedural_count;
+    document.getElementById('s-crit').textContent=s.critical_events;
+    document.getElementById('s-high').textContent=s.high_events;
+  }catch(e){}
+}
+
+// ── MANUAL LOG ────────────────────────────────────
+async function submitLog(btn){
+  const type=document.getElementById('log-type').value;
+  const floor=document.getElementById('log-floor').value.trim()||null;
+  const reporter=document.getElementById('log-reporter').value.trim()||null;
+  const content=document.getElementById('log-content').value.trim();
+  if(!content){alert('Please describe the issue or observation.');return;}
+  const orig=btn.innerHTML;
+  btn.innerHTML='Logging...';btn.disabled=true;
+  try{
+    await fetch('/log',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({building_id:activeBuilding,signal_type:type,content,floor,reported_by:reporter})});
+    document.getElementById('log-content').value='';
+    document.getElementById('log-floor').value='';
+    document.getElementById('log-reporter').value='';
+    const ok=document.getElementById('log-ok');
+    ok.style.display='block';
+    setTimeout(()=>ok.style.display='none',4000);
+    await refresh();
+  }catch(err){alert('Error: '+err.message);}
+  finally{btn.innerHTML=orig;btn.disabled=false;}
+}
+
+// ── CHAT ──────────────────────────────────────────
+function ask(q){document.getElementById('cin').value=q;sendQ();}
+async function sendQ(){
+  const inp=document.getElementById('cin'),btn=document.getElementById('ask-btn');
+  const q=inp.value.trim();if(!q)return;
+  inp.value='';btn.disabled=true;
+  const msgs=document.getElementById('chat-msgs');
+  const uD=document.createElement('div');uD.className='msg-u';uD.textContent=q;msgs.appendChild(uD);
+  const tD=document.createElement('div');tD.className='msg-a';
+  tD.innerHTML='<div class="msg-ai"><div class="msg-hdr"><div class="msg-av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 7h4M7 5l2 2-2 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div><div class="msg-nm">Asset Brain</div></div><div class="thinking"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>';
+  msgs.appendChild(tD);msgs.scrollTop=msgs.scrollHeight;
+  try{
+    const data=await(await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,building_id:activeBuilding})})).json();
+    tD.remove();
+    const urg=data.urgency||'low',mem=data.memory_used||{};
+    const cites=(data.citations||[]).slice(0,3).map(c=>`<span class="src" title="${c}">${c.slice(0,40)}…</span>`).join('');
+    const insight=data.cross_domain_insight?`<div class="msg-insight"><div class="msg-il">Key Connection</div>${data.cross_domain_insight}</div>`:'';
+    const aD=document.createElement('div');aD.className='msg-a';
+    aD.innerHTML=`<div class="msg-ai"><div class="msg-hdr"><div class="msg-av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 7h4M7 5l2 2-2 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div><div class="msg-nm">Asset Brain</div><div class="urg urg-${urg}">${urg}</div></div><div class="msg-ans">${data.answer||'No answer.'}</div>${data.recommended_action?`<div class="msg-act">Recommended: ${data.recommended_action}</div>`:''}${insight}${cites?`<div class="srcs">${cites}</div>`:''}<div class="msg-mem">Based on ${mem.episodic_count||0} events · ${mem.semantic_count||0} patterns · ${mem.procedural_count||0} rules</div></div>`;
+    msgs.appendChild(aD);
+  }catch(err){
+    tD.remove();const eD=document.createElement('div');eD.className='msg-a';
+    eD.innerHTML=`<div class="msg-ai"><div class="msg-ans" style="color:var(--rose)">Error: ${err.message}</div></div>`;msgs.appendChild(eD);
+  }
+  msgs.scrollTop=msgs.scrollHeight;btn.disabled=false;inp.focus();
+}
+
+// ── ACTIONS ───────────────────────────────────────
+async function compressMemory(btn){
+  const orig=btn.innerHTML;btn.innerHTML='Analyzing...';btn.disabled=true;
+  try{await fetch('/memory/compress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({building_id:activeBuilding})});await loadSemantic();await loadStats();}
+  finally{btn.innerHTML=orig;btn.disabled=false;}
+}
+async function triggerAnomaly(btn){
+  const orig=btn.innerHTML;btn.innerHTML='Firing...';btn.disabled=true;
+  try{await fetch('/demo/anomaly',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({building_id:activeBuilding})});await new Promise(r=>setTimeout(r,2200));await refresh();}
+  finally{btn.innerHTML=orig;btn.disabled=false;}
+}
+async function refresh(){
+  await Promise.all([loadEpisodic(),loadSemantic(),loadProcedural(),loadStats()]);
+}
+
+// ── INIT ──────────────────────────────────────────
+refresh();
+loadPortfolio();
+loadHeroTags();
+setInterval(refresh, 5000);
+setInterval(() => { loadPortfolio(); loadHeroTags(); }, 15000);
+</script>
+</body>
+</html>
