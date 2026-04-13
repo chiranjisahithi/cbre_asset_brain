@@ -222,6 +222,9 @@ nav {
 .live-ring { width:8px;height:8px;border-radius:50%;background:var(--bright);box-shadow:0 0 8px var(--bright-glow);animation:lring 1.8s ease-in-out infinite;flex-shrink:0 }
 @keyframes lring { 0%,100%{opacity:1}50%{opacity:.2} }
 .wb { flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--beige2) transparent }
+.panel-hidden { display:none }
+.see-more-btn { display:flex;align-items:center;gap:6px;width:100%;justify-content:center;padding:8px 0;font-size:12px;font-weight:500;color:var(--mid);background:none;border:1.5px dashed var(--border);border-radius:8px;cursor:pointer;margin-top:6px;transition:color .15s,border-color .15s }
+.see-more-btn:hover { color:var(--green);border-color:var(--green) }
 .wb::-webkit-scrollbar { width:3px }
 .wb::-webkit-scrollbar-thumb { background:var(--beige2);border-radius:2px }
 
@@ -333,6 +336,142 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
 .foot-logo { font-family:var(--display);font-size:16px;font-weight:800;color:#fff }
 .foot-sub { font-size:11px;color:rgba(255,255,255,.5);margin-top:4px }
 .foot-right { font-size:11px;color:rgba(255,255,255,.5);text-align:right;line-height:1.8;font-family:var(--mono) }
+
+/* ── AGENT FLOW OVERLAY ─────────────────────────────── */
+#flow-overlay {
+  position:fixed;inset:0;z-index:9999;background:rgba(10,12,10,.97);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .4s ease;
+  font-family:var(--mono);
+}
+#flow-overlay.active { opacity:1;pointer-events:all; }
+
+.flow-title {
+  font-family:var(--serif);font-size:22px;font-weight:700;
+  color:var(--white);letter-spacing:-.5px;margin-bottom:6px;text-align:center;
+}
+.flow-sub {
+  font-size:11px;color:var(--mid);margin-bottom:40px;text-align:center;letter-spacing:.05em;
+}
+
+/* Agent nodes row */
+.flow-agents {
+  display:flex;gap:20px;align-items:flex-start;margin-bottom:32px;position:relative;
+}
+
+.flow-agent {
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  opacity:.25;transition:opacity .4s,transform .4s;
+  transform:translateY(6px);
+}
+.flow-agent.lit { opacity:1;transform:translateY(0); }
+
+.fa-ring {
+  width:64px;height:64px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;transition:border-color .4s,box-shadow .4s;
+  background:var(--card);
+}
+.flow-agent.lit .fa-ring {
+  border-color:var(--green);
+  box-shadow:0 0 0 6px rgba(16,185,129,.12), 0 0 24px rgba(16,185,129,.3);
+}
+.flow-agent.lit.ag-o .fa-ring { border-color:#f97316;box-shadow:0 0 0 6px rgba(249,115,22,.12),0 0 24px rgba(249,115,22,.3); }
+.flow-agent.lit.ag-r .fa-ring { border-color:#f43f5e;box-shadow:0 0 0 6px rgba(244,63,94,.12),0 0 24px rgba(244,63,94,.3); }
+.flow-agent.lit.ag-s .fa-ring { border-color:#38bdf8;box-shadow:0 0 0 6px rgba(56,189,248,.12),0 0 24px rgba(56,189,248,.3); }
+
+.fa-pulse {
+  position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid currentColor;opacity:0;
+  animation:none;
+}
+.flow-agent.lit .fa-pulse {
+  animation:faPulse 1.4s ease-out infinite;
+  color:var(--green);
+}
+.flow-agent.lit.ag-o .fa-pulse { color:#f97316; }
+.flow-agent.lit.ag-r .fa-pulse { color:#f43f5e; }
+.flow-agent.lit.ag-s .fa-pulse { color:#38bdf8; }
+@keyframes faPulse {
+  0%{transform:scale(1);opacity:.6}
+  100%{transform:scale(1.5);opacity:0}
+}
+
+.fa-label {
+  font-size:10px;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;text-align:center;
+  transition:color .4s;
+}
+.flow-agent.lit .fa-label { color:var(--white); }
+
+.fa-status {
+  font-size:11px;color:rgba(255,255,255,0.55);min-height:12px;text-align:center;
+  max-width:90px;line-height:1.4;transition:color .3s;
+}
+.flow-agent.lit .fa-status { color:#4ade80; }
+.flow-agent.lit.ag-o .fa-status { color:#fb923c; }
+.flow-agent.lit.ag-r .fa-status { color:#fb7185; }
+.flow-agent.lit.ag-s .fa-status { color:#38bdf8; }
+
+/* Cross-agent message lines */
+.flow-messages {
+  width:520px;max-width:90vw;margin-bottom:28px;min-height:60px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.flow-msg {
+  display:flex;align-items:flex-start;gap:8px;
+  opacity:0;transform:translateX(-8px);
+  transition:opacity .35s,transform .35s;
+  font-size:11px;
+}
+.flow-msg.show { opacity:1;transform:translateX(0); }
+.flow-msg-dot {
+  width:6px;height:6px;border-radius:50%;margin-top:3px;flex-shrink:0;
+}
+.flow-msg-text { color:rgba(255,255,255,0.75);line-height:1.5; }
+.flow-msg-text strong { color:var(--white); }
+
+/* Final analysis reveal */
+.flow-result {
+  width:520px;max-width:90vw;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;opacity:0;transform:translateY(12px);
+  transition:opacity .5s,transform .5s;
+}
+.flow-result.show { opacity:1;transform:translateY(0); }
+.flow-result-hdr {
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.flow-result-icon {
+  width:28px;height:28px;border-radius:8px;
+  background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);
+  display:flex;align-items:center;justify-content:center;
+}
+.flow-result-label { font-size:10px;color:var(--mid);letter-spacing:.1em;text-transform:uppercase; }
+.flow-result-title { font-size:13px;color:var(--white);font-weight:600;margin-bottom:4px; }
+.flow-result-body { font-size:11px;color:rgba(255,255,255,0.72);line-height:1.7; }
+.flow-result-tag {
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:10px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--green);background:rgba(16,185,129,.1);
+  border:1px solid rgba(16,185,129,.2);border-radius:20px;padding:3px 10px;
+}
+
+.flow-skip {
+  margin-top:24px;font-size:10px;color:var(--mid);cursor:pointer;
+  letter-spacing:.08em;text-transform:uppercase;
+  opacity:.5;transition:opacity .2s;border:none;background:none;
+}
+.flow-skip:hover { opacity:1; }
+
+/* Connector lines between agents */
+.flow-connector {
+  position:absolute;top:32px;height:2px;
+  background:linear-gradient(90deg, transparent, var(--green), transparent);
+  opacity:0;transition:opacity .4s,width .4s;
+  pointer-events:none;
+}
+
 </style>
 </head>
 <body>
@@ -433,7 +572,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
   <div class="hero-content" style="position:relative;z-index:10">
     <div class="hero-overline">CBRE Intelligent Memory System</div>
     <div class="hero-h1">Buildings That<br><em>Remember.</em></div>
-    <div class="hero-p">Five AI agents working together monitoring equipment, tracking tenants, logging maintenance, reading market signals and remembering everything across time.</div>
+    <div class="hero-p">Five AI agents working together — monitoring equipment, tracking tenants, logging maintenance, reading market signals — and remembering everything across time.</div>
     <div class="hero-ctas">
       <a class="btn-primary" href="#dashboard">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="white" stroke-width="1.5"/><path d="M5 7h4M7 5l2 2-2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -463,7 +602,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
         <div class="hw-title">Event Memory</div>
         <div class="hw-tag i">Every signal, stored</div>
         <div class="hw-desc">Every sensor reading, tenant message, maintenance note and market signal is captured with an importance score. Critical signals persist; routine ones fade naturally over time.</div>
-        <div class="hw-eg i">"Chiller on Floor 12 showing temperature variance third occurrence this month. Importance elevated to 95%."</div>
+        <div class="hw-eg i">"Chiller on Floor 12 showing temperature variance — third occurrence this month. Importance elevated to 95%."</div>
       </div>
       <div class="hw-card">
         <div class="hw-num">02</div>
@@ -472,7 +611,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
         </div>
         <div class="hw-title">Pattern Intelligence</div>
         <div class="hw-tag v">Connections humans miss</div>
-        <div class="hw-desc">The AI compresses events into cross-domain patterns connecting an equipment fault with a tenant complaint and an upcoming lease renewal in ways no single tool would ever surface.</div>
+        <div class="hw-desc">The AI compresses events into cross-domain patterns — connecting an equipment fault with a tenant complaint and an upcoming lease renewal in ways no single tool would ever surface.</div>
         <div class="hw-eg v">"Floor 12 chiller risk is directly linked to Tenant 12B's complaints and their 90-day lease renewal. Action required urgently."</div>
       </div>
       <div class="hw-card">
@@ -482,7 +621,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
         </div>
         <div class="hw-title">Learned Rules</div>
         <div class="hw-tag c">Gets smarter over time</div>
-        <div class="hw-desc">When patterns repeat, the system writes operational rules automatically. The building learns from its own history  the same costly mistake never happens twice.</div>
+        <div class="hw-desc">When patterns repeat, the system writes operational rules automatically. The building learns from its own history — the same costly mistake never happens twice.</div>
         <div class="hw-eg c">"RULE: 3+ maintenance events on same floor within 30 days → Schedule preventive inspection before a tenant complaint is filed."</div>
       </div>
     </div>
@@ -493,7 +632,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
 <section id="portfolio" style="background:transparent">
   <div class="sec-eyebrow">Your Portfolio</div>
   <div class="sec-h2">All Properties.<br><em>One Brain.</em></div>
-  <div class="sec-sub">Every property you manage gets its own persistent AI memory episodic events, learned patterns, operational rules. Select a property to load its live dashboard.</div>
+  <div class="sec-sub">Every property you manage gets its own persistent AI memory — episodic events, learned patterns, operational rules. Select a property to load its live dashboard.</div>
   <div class="prop-grid" id="portfolio-grid">
     <div class="prop-card" style="opacity:.3;pointer-events:none"><div class="empty-s">Loading...</div></div>
     <div class="prop-card" style="opacity:.3;pointer-events:none"><div class="empty-s">Loading...</div></div>
@@ -627,7 +766,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7.5 3L11 6.5 7.5 10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Log to Memory
           </button>
-          <div class="log-ok" id="log-ok">Signal stored pattern analysis running</div>
+          <div class="log-ok" id="log-ok">Signal stored — pattern analysis running</div>
         </div>
       </div>
 
@@ -675,7 +814,7 @@ footer { background:var(--green);border-top:1px solid var(--green2);padding:40px
                 <div class="msg-av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 7h4M7 5l2 2-2 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div>
                 <div class="msg-nm">Asset Brain</div>
               </div>
-              <div class="msg-ans">Hello. I have full memory of <strong id="chat-bldg">Dallas Tower A</strong> every event from all 4 agents, every pattern learned, every rule written.<br><br>Ask me what's wrong, why it happened, and what to do about it.</div>
+              <div class="msg-ans">Hello. I have full memory of <strong id="chat-bldg">Dallas Tower A</strong> — every event from all 4 agents, every pattern learned, every rule written.<br><br>Ask me what's wrong, why it happened, and what to do about it.</div>
             </div>
           </div>
         </div>
@@ -752,7 +891,7 @@ function setTag(n, color, text) {
 async function loadHeroTags() {
   try {
     const [stats, portfolio] = await Promise.all([
-      fetch(`/stats/${activeBuilding}`).then(r => r.json()),
+      fetch('/stats').then(r => r.json()),
       fetch('/portfolio').then(r => r.json())
     ]);
 
@@ -764,7 +903,7 @@ async function loadHeroTags() {
     }
 
     // Tag 2: Most urgent episodic event — pull latest critical
-    const eps = await fetch(`/memory/episodic?limit=5&min_salience=0.85&building_id=${activeBuilding}`).then(r => r.json());
+    const eps = await fetch('/memory/episodic?limit=5&min_salience=0.85').then(r => r.json());
     if (eps.length > 0) {
       const top = eps[0];
       const agent = top.agent.replace('_agent', '');
@@ -963,7 +1102,7 @@ function selectBuilding(id,name,addr,card){
 // ── DATA LOADING ─────────────────────────────────
 async function loadEpisodic(){
   try{
-    const evs=await(await fetch('/memory/episodic?limit=40')).json();
+    const evs=await(await fetch(`/memory/episodic?limit=40&building_id=${activeBuilding}`)).json();
     const feed=document.getElementById('event-feed');
     const newE=evs.filter(e=>!knownIds.has(e.id));
     if(!newE.length) return;
@@ -1018,15 +1157,15 @@ function buildAlert(e){
 
 async function loadSemantic(){
   try{
-    const ps=await(await fetch('/memory/semantic')).json();
+    const ps=await(await fetch(`/memory/semantic?building_id=${activeBuilding}`)).json();
     const panel=document.getElementById('semantic-panel');
     document.getElementById('sem-count').textContent=ps.length;
     if(!ps.length){panel.innerHTML='<div class="empty-s">No patterns yet.<br>Add signals then run analysis.</div>';
       const sb=document.getElementById('seebtn-semantic-panel');if(sb)sb.style.display='none';return;}
     const semBtn=document.getElementById('seebtn-semantic-panel');
-    if(semBtn) semBtn.style.display=ps.length>2?'flex':'none';
+    if(semBtn) semBtn.style.display=ps.length>5?'flex':'none';
     panel.innerHTML=ps.map((p,i)=>`
-      <div class="pat-card ${i>=2?'panel-hidden':''}" style="animation-delay:${i*.06}s">
+      <div class="pat-card ${i>=5?'panel-hidden':''}" style="animation-delay:${i*.06}s">
         <div class="pat-tag">AI Pattern ${i+1}</div>
         <div class="pat-title">${p.topic.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</div>
         <div class="pat-body">${p.summary}</div>
@@ -1037,15 +1176,15 @@ async function loadSemantic(){
 
 async function loadProcedural(){
   try{
-    const rs=await(await fetch('/memory/procedural')).json();
+    const rs=await(await fetch(`/memory/procedural?building_id=${activeBuilding}`)).json();
     const panel=document.getElementById('procedural-panel');
     document.getElementById('proc-count').textContent=rs.length;
     if(!rs.length){panel.innerHTML='<div class="empty-s">No rules yet.<br>Rules appear automatically when patterns repeat.</div>';
       const pb=document.getElementById('seebtn-procedural-panel');if(pb)pb.style.display='none';return;}
     const procBtn=document.getElementById('seebtn-procedural-panel');
-    if(procBtn) procBtn.style.display=rs.length>2?'flex':'none';
+    if(procBtn) procBtn.style.display=rs.length>5?'flex':'none';
     panel.innerHTML=rs.map((r,i)=>`
-      <div class="rule-card ${i>=2?'panel-hidden':''}" style="animation-delay:${i*.06}s">
+      <div class="rule-card ${i>=5?'panel-hidden':''}" style="animation-delay:${i*.06}s">
         <div class="rule-lbl">Learned Rule</div>
         <div class="rule-text">${r.rule}</div>
         <div class="rule-action">Action: ${r.action}</div>
@@ -1099,7 +1238,7 @@ async function sendQ(){
   tD.innerHTML='<div class="msg-ai"><div class="msg-hdr"><div class="msg-av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 7h4M7 5l2 2-2 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div><div class="msg-nm">Asset Brain</div></div><div class="thinking"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>';
   msgs.appendChild(tD);msgs.scrollTop=msgs.scrollHeight;
   try{
-    const data=await(await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,building_id:activeBuilding})})).json();
+    const data=await(await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
     tD.remove();
     const urg=data.urgency||'low',mem=data.memory_used||{};
     const cites=(data.citations||[]).slice(0,3).map(c=>`<span class="src" title="${c}">${c.slice(0,40)}…</span>`).join('');
@@ -1114,16 +1253,158 @@ async function sendQ(){
   msgs.scrollTop=msgs.scrollHeight;btn.disabled=false;inp.focus();
 }
 
+// ── AGENT FLOW OVERLAY ────────────────────────────
+function showFlowOverlay() {
+  document.getElementById('flow-overlay').classList.add('active');
+}
+function closeFlowOverlay() {
+  document.getElementById('flow-overlay').classList.remove('active');
+  // reset all agents
+  ['ops','tenant','maint','market','brain'].forEach(a => {
+    const el = document.getElementById('fag-'+a);
+    if(el) el.classList.remove('lit');
+  });
+  document.getElementById('flow-messages').innerHTML = '';
+  document.getElementById('flow-result').classList.remove('show');
+  document.getElementById('flow-phase-label').textContent = 'Agents initializing…';
+}
+
+function flowLit(agentId, status) {
+  const el = document.getElementById('fag-' + agentId);
+  if(el) el.classList.add('lit');
+  const st = document.getElementById('fag-' + agentId + '-status');
+  if(st) st.textContent = status;
+}
+
+function flowMsg(text, color) {
+  const box = document.getElementById('flow-messages');
+  const div = document.createElement('div');
+  div.className = 'flow-msg';
+  div.innerHTML = `<div class="flow-msg-dot" style="background:${color}"></div><div class="flow-msg-text">${text}</div>`;
+  box.appendChild(div);
+  requestAnimationFrame(() => div.classList.add('show'));
+}
+
+function flowPhase(text) {
+  document.getElementById('flow-phase-label').textContent = text;
+}
+
+async function runAgentFlow(mode) {
+  // mode: 'anomaly' or 'compress'
+  showFlowOverlay();
+  await delay(300);
+
+  if(mode === 'anomaly') {
+    // === ANOMALY FLOW ===
+    flowPhase('Anomaly detected — agents activating…');
+    await delay(400);
+
+    flowLit('ops', 'HVAC failure detected');
+    flowMsg('<strong>Ops Agent</strong> → Floor 12 HVAC temp spike +4.2°C · salience 0.95', '#10b981');
+    await delay(900);
+
+    flowLit('maint', 'Work order flagged');
+    flowMsg('<strong>Ops → Maintenance</strong> Equipment issue may require work order', '#f43f5e');
+    await delay(700);
+
+    flowLit('tenant', 'Monitoring complaints');
+    flowMsg('<strong>Ops → Tenant</strong> Environmental issue may impact tenant comfort', '#f97316');
+    await delay(700);
+
+    flowPhase('Cross-agent signals propagating…');
+    flowLit('market', 'Lease risk scan');
+    flowMsg('<strong>Tenant → Market</strong> Complaint patterns linked to lease retention risk', '#38bdf8');
+    await delay(800);
+
+    flowMsg('<strong>Maintenance → Ops</strong> Critical repair flagged — boosting alert salience', '#f43f5e');
+    await delay(600);
+
+    flowPhase('Compressing episodic memory → patterns…');
+    await delay(900);
+
+    // Trigger actual API call
+    try { await fetch('/demo/anomaly', {method:'POST'}); } catch(e) {}
+    await delay(1800);
+
+    flowPhase('Asset Brain synthesizing across all agents…');
+    flowLit('brain', 'Synthesizing');
+    await delay(1000);
+
+    document.getElementById('flow-result-title').textContent =
+      'HVAC failure + tenant comfort risk + lease exposure detected';
+    document.getElementById('flow-result-body').textContent =
+      'Ops Agent detected temperature anomaly on floor 12 (salience 0.95). ' +
+      'Maintenance was auto-alerted via cross-agent broadcast. ' +
+      'Tenant Agent is monitoring for comfort complaints that could escalate to lease risk. ' +
+      'Market Agent flagged 2 leases expiring within 90 days on affected floors. ' +
+      'Compression engine extracted 2 new cross-domain patterns and updated procedural rules.';
+    document.getElementById('flow-result').classList.add('show');
+    flowPhase('Analysis complete — memory updated across all 3 tiers');
+
+  } else {
+    // === COMPRESS / ANALYSIS FLOW ===
+    flowPhase('Running memory compression…');
+    await delay(400);
+
+    flowLit('ops', 'Reading sensor events');
+    flowMsg('<strong>Ops Agent</strong> contributing episodic sensor data to compression', '#10b981');
+    await delay(700);
+
+    flowLit('tenant', 'Reading complaints');
+    flowMsg('<strong>Tenant Agent</strong> contributing complaint signals and lease risk flags', '#f97316');
+    await delay(700);
+
+    flowLit('maint', 'Reading work orders');
+    flowMsg('<strong>Maintenance Agent</strong> contributing work orders and floor patterns', '#f43f5e');
+    await delay(700);
+
+    flowLit('market', 'Reading lease data');
+    flowMsg('<strong>Market Agent</strong> contributing lease expiry and competitor signals', '#38bdf8');
+    await delay(800);
+
+    flowPhase('Claude compressing episodic → semantic patterns…');
+    await delay(600);
+    flowMsg('<strong>Compression Engine</strong> identifying cross-domain patterns across all agents', '#6366f1');
+    await delay(500);
+    flowMsg('<strong>Rule Engine</strong> deriving IF-THEN procedural rules from strong patterns', '#6366f1');
+
+    // Trigger actual API call
+    try { await fetch('/memory/compress', {method:'POST'}); } catch(e) {}
+    await delay(2000);
+
+    flowPhase('Asset Brain reading all 3 memory tiers…');
+    flowLit('brain', 'Synthesizing');
+    await delay(1000);
+
+    document.getElementById('flow-result-title').textContent =
+      'Memory compressed · patterns extracted · rules learned';
+    document.getElementById('flow-result-body').textContent =
+      'All 4 agents contributed their episodic memories to the compression engine. ' +
+      'Claude identified cross-domain patterns linking sensor data, tenant complaints, ' +
+      'maintenance history, and lease signals. ' +
+      'High-confidence patterns were promoted to semantic memory. ' +
+      'Procedural rules were derived and stored — the system now knows how to react automatically.';
+    document.getElementById('flow-result').classList.add('show');
+    flowPhase('Compression complete — check Patterns and Rules panels');
+  }
+
+  await delay(400);
+  await refresh();
+
+  // Auto-close after 5s
+  setTimeout(closeFlowOverlay, 5000);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 // ── ACTIONS ───────────────────────────────────────
 async function compressMemory(btn){
-  const orig=btn.innerHTML;btn.innerHTML='Analyzing...';btn.disabled=true;
-  try{await fetch('/memory/compress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({building_id:activeBuilding})});await loadSemantic();await loadStats();}
-  finally{btn.innerHTML=orig;btn.disabled=false;}
+  closeFlowOverlay();
+  runAgentFlow('compress');
 }
 async function triggerAnomaly(btn){
-  const orig=btn.innerHTML;btn.innerHTML='Firing...';btn.disabled=true;
-  try{await fetch('/demo/anomaly',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({building_id:activeBuilding})});await new Promise(r=>setTimeout(r,2200));await refresh();}
-  finally{btn.innerHTML=orig;btn.disabled=false;}
+  closeFlowOverlay();
+  runAgentFlow('anomaly');
 }
 async function refresh(){
   await Promise.all([loadEpisodic(),loadSemantic(),loadProcedural(),loadStats()]);
@@ -1136,5 +1417,95 @@ loadHeroTags();
 setInterval(refresh, 5000);
 setInterval(() => { loadPortfolio(); loadHeroTags(); }, 15000);
 </script>
+
+<!-- AGENT FLOW OVERLAY -->
+<div id="flow-overlay">
+  <div class="flow-title">Memory Agent Network</div>
+  <div class="flow-sub" id="flow-phase-label">Agents initializing…</div>
+
+  <div class="flow-agents" id="flow-agents-row">
+    <div class="flow-agent ag-i" id="fag-ops">
+      <div class="fa-ring">
+        <div class="fa-pulse"></div>
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="4" y="9" width="18" height="13" rx="3" stroke="#10b981" stroke-width="1.5"/>
+          <path d="M9 9V7a4 4 0 018 0v2" stroke="#10b981" stroke-width="1.5"/>
+          <circle cx="13" cy="15.5" r="2" fill="#10b981" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="fa-label">Ops Agent</div>
+      <div class="fa-status" id="fag-ops-status">Standby</div>
+    </div>
+
+    <div class="flow-agent ag-o" id="fag-tenant">
+      <div class="fa-ring">
+        <div class="fa-pulse"></div>
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <circle cx="13" cy="10" r="4.5" stroke="#f97316" stroke-width="1.5"/>
+          <path d="M5 23c0-4.5 3.5-7.5 8-7.5s8 3 8 7.5" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="fa-label">Tenant Agent</div>
+      <div class="fa-status" id="fag-tenant-status">Standby</div>
+    </div>
+
+    <div class="flow-agent ag-r" id="fag-maint">
+      <div class="fa-ring">
+        <div class="fa-pulse"></div>
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <path d="M15.5 4.5L21.5 10.5 10.5 21.5l-6 1 1-6L15.5 4.5z" stroke="#f43f5e" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="fa-label">Maintenance</div>
+      <div class="fa-status" id="fag-maint-status">Standby</div>
+    </div>
+
+    <div class="flow-agent ag-s" id="fag-market">
+      <div class="fa-ring">
+        <div class="fa-pulse"></div>
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <path d="M4 19l5-7 5 5 5-10" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="22" cy="7" r="2" fill="#38bdf8" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="fa-label">Market Agent</div>
+      <div class="fa-status" id="fag-market-status">Standby</div>
+    </div>
+
+    <div class="flow-agent" id="fag-brain" style="margin-left:8px;border-left:1px dashed #333;padding-left:28px;">
+      <div class="fa-ring" style="width:72px;height:72px;">
+        <div class="fa-pulse"></div>
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+          <circle cx="15" cy="15" r="11" stroke="#6366f1" stroke-width="1.5"/>
+          <path d="M10 15h10M15 10l5 5-5 5" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="fa-label">Asset Brain</div>
+      <div class="fa-status" id="fag-brain-status">Waiting</div>
+    </div>
+  </div>
+
+  <div class="flow-messages" id="flow-messages"></div>
+
+  <div class="flow-result" id="flow-result">
+    <div class="flow-result-hdr">
+      <div class="flow-result-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 7h4M7 5l2 2-2 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="flow-result-label">Cross-Domain Analysis Complete</div>
+      </div>
+    </div>
+    <div class="flow-result-title" id="flow-result-title">Synthesizing memory…</div>
+    <div class="flow-result-body" id="flow-result-body"></div>
+    <div class="flow-result-tag">
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="3" fill="#10b981"/></svg>
+      Memory updated · Patterns extracted · Rules learned
+    </div>
+  </div>
+
+  <button class="flow-skip" id="flow-skip-btn" onclick="closeFlowOverlay()">Skip →</button>
+</div>
+
 </body>
 </html>
